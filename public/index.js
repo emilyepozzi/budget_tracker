@@ -4,7 +4,6 @@ let myChart;
 fetch("/api/transaction")
   .then(response => response.json())
   .then(data => {
-    // save db data on global variable
     transactions = data;
     populateTotal();
     populateTable();
@@ -12,13 +11,12 @@ fetch("/api/transaction")
   });
 
 function populateTotal() {
-  // reduce transaction amounts to a single total value
   const total = transactions.reduce((total, t) => {
     return total + parseInt(t.value);
   }, 0);
 
-  const totalEl = document.querySelector("#total");
-  totalEl.textContent = total;
+  const elTotal = document.querySelector("#total");
+  elTotal.textContent = total;
 }
 
 function populateTable() {
@@ -26,7 +24,8 @@ function populateTable() {
   tbody.innerHTML = "";
 
   transactions.forEach(transaction => {
-    // create and populate a table row
+
+    
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${transaction.name}</td>
@@ -38,23 +37,19 @@ function populateTable() {
 }
 
 function populateChart() {
-  // copy array and reverse it
+
   const reversed = transactions.slice().reverse();
   let sum = 0;
-
-  // create date labels for chart
   const labels = reversed.map(t => {
     const date = new Date(t.date);
     return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
   });
 
-  // create incremental values for chart
   const data = reversed.map(t => {
     sum += parseInt(t.value);
     return sum;
   });
 
-  // remove old chart if it exists
   if (myChart) {
     myChart.destroy();
   }
@@ -82,7 +77,6 @@ function sendTransaction(isAdding) {
   const amountEl = document.querySelector("#t-amount");
   const errorEl = document.querySelector("form .error");
 
-  // validate form
   if (nameEl.value === "" || amountEl.value === "") {
     errorEl.textContent = "Missing Information";
     return;
@@ -90,27 +84,22 @@ function sendTransaction(isAdding) {
     errorEl.textContent = "";
   }
 
-  // create record
   const transaction = {
     name: nameEl.value,
     value: amountEl.value,
     date: new Date().toISOString()
   };
 
-  // if subtracting funds, convert amount to negative number
   if (!isAdding) {
     transaction.value *= -1;
   }
 
-  // add to beginning of current array of data
   transactions.unshift(transaction);
 
-  // re-run logic to populate ui with new record
   populateChart();
   populateTable();
   populateTotal();
 
-  // also send to server
   fetch("/api/transaction", {
     method: "POST",
     body: JSON.stringify(transaction),
@@ -130,10 +119,8 @@ function sendTransaction(isAdding) {
       }
     })
     .catch(err => {
-      // fetch failed, so save in indexed db
       saveRecord(transaction);
 
-      // clear form
       nameEl.value = "";
       amountEl.value = "";
     });
