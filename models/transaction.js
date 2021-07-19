@@ -18,6 +18,8 @@ const schemaTrans = new theSchema({
   }
 });
 
+
+
 const theTransaction = mongoose.model("theTransaction", schemaTrans);
 
 module.exports = theTransaction;
